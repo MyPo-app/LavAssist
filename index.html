@@ -1027,13 +1027,18 @@ async function sendEmail(data) {
     await fetch('https://api.resend.com/emails',{
       method:'POST',
       headers:{'Authorization':'Bearer '+KEY,'Content-Type':'application/json'},
-      body:JSON.stringify({from:'questionnaire@lavcom.fr',to:['contact@lavcom.fr'],subject:'Nouveau questionnaire — '+(data['Raison sociale']||data['Nom']||'Prospect'),html:html})
+      body:JSON.stringify({
+        from:'onboarding@resend.dev',
+        to:'contact@lavcom.fr',
+        subject:'Nouveau questionnaire Lav\'Assist — '+data['Raison sociale'],
+        html:html
+      })
     });
-  }catch(e){}
+  } catch(e) {
+    console.error('Email error:', e);
+  }
 }
-
-// ── SUBMIT ──
-async function doSubmit() {
-  var data=collect();
-  window._data=data;
-  document.querySelectorAll('.sec').forEach(function(s){s.classList.re
+updateUI();
+</script>
+</body>
+</html>
