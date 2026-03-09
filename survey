@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questionnaire Lav'Assist — Audit Téléphonique</title>
+    <style>
+        /* ============================================
+           RESET & BASE
+        ============================================ */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --blue-dark:   #1a2e4a;
+            --blue-mid:    #2563eb;
+            --blue-light:  #eff6ff;
+            --blue-border: #bfdbfe;
+            --green:       #16a34a;
+            --green-light: #f0fdf4;
+            --green-border:#bbf7d0;
+            --orange:      #ea580c;
+            --orange-light:#fff7ed;
+            --red:         #dc2626;
+            --red-light:   #fef2f2;
+            --gray-50:     #f9fafb;
+            --gray-100:    #f3f4f6;
+            --gray-200:    #e5e7eb;
+            --gray-300:    #d1d5db;
+            --gray-400:    #9ca3af;
+            --gray-600:    #4b5563;
+            --gray-700:    #374151;
+            --gray-900:    #111827;
+            --radius:      12px;
+            --shadow:      0 4px 24px rgba(0,0,0,.08);
+            --shadow-lg:   0 8px 40px rgba(0,0,0,.12);
+            --transition:  .2s ease;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #f0f4ff 0%, #fafafa 100%);
+            min-height: 100vh;
+            color: var(--gray-900);
+            line-height: 1.6;
+        }
+
+        /* ============================================
+           HEADER
+        ============================================ */
+        .header {
+            background: linear-gradient(135deg, var(--blue-dark) 0%, #243b67 100%);
+            color: white;
+            padding: 24px 32px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 20px rgba(0,0,0,.3);
+        }
+        .header h1 {
+            font-size: clamp(1.2rem, 3vw, 1.6rem);
+            font-weight: 700;
+            letter-spacing: -.3px;
+        }
+        .header p {
+            font-size: .85rem;
+            opacity: .75;
+            margin-top: 4px;
+        }
+
+        /* ============================================
+           PROGRESS BAR
+        ============================================ */
+        .progress-container {
+            background: white;
+            padding: 16px 32px;
+            border-bottom: 1px solid var(--gray-200);
+            position: sticky;
+            top: 80px;
+            z-index: 99;
+            box-shadow: 0 2px 8px rgba(0,0,0,.04);
+        }
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: .8rem;
+            color: var(--gray-600);
+        }
+        .progress-track {
+            height: 8px;
+            background: var(--gray-200);
+            border-radius: 99px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--blue-mid), #7c3aed);
+            border-radius: 99px;
+            transition: width .5s cubic-bezier(.4,0,.2,1);
+        }
+        .steps-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .step-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--gray-300);
+            transition: all .3s;
+            cursor: pointer;
+        }
+        .step-dot.active  { background: var(--blue-mid); transform: scale(1.4); }
+        .step-dot.done    { background: var(--green); }
+
+        /* ============================================
+           MAIN LAYOUT
+        ============================================ */
+        .main {
+            max-width: 860px;
+            margin: 32px auto;
+            padding: 0 16px 80px;
+        }
+
+        /* ============================================
+           SECTIONS
+        ============================================ */
+        .section {
+            display: none;
+            animation: fadeIn .35s ease;
+        }
+        .section.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        .section-icon {
+            width: 52px; height: 52px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        .section-title { font-size: 1.3rem; font-weight: 700; color: var(--blue-dark); }
+        .section-desc  { font-size: .85rem; color: var(--gray-600); margin-top: 2px; }
+
+        /* ============================================
+           CARDS
+        ============================================ */
+        .card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--gray-100);
+            transition: box-shadow var(--transition);
+        }
+        .card:hover { box-shadow: var(--shadow-lg); }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--blue-dark);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-title .badge {
+            background: var(--blue-light);
+            color: var(--blue-mid);
+            font-size: .7rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 99px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+        .card-title .badge.optional {
+            background: var(--gray-100);
+            color: var(--gray-600);
+        }
+
+        /* ============================================
+           FORM ELEMENTS
+        ============================================ */
+        .field { margin-bottom: 16px; }
+        .field:last-child { margin-bottom: 0; }
+
+        label {
+            display: block;
+            font-size: .85rem;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 6px;
+        }
+        label .req { color: var(--red); margin-left: 2px; }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid var(--gray-300);
+            border-radius: 8px;
+            font-size: .9rem;
+            font-family: inherit;
+            color: var(--gray-900);
+            background: white;
+            transition: border-color var(--transition), box-shadow var(--transition);
+            outline: none;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--blue-mid);
+            box-shadow: 0 0 0 3px rgba(37,99,235,.15);
+        }
+        input.error, select.error, textarea.error {
+            border-color: var(--red);
+            box-shadow: 0 0 0 3px rgba(220,38,38,.12);
+        }
+        .field-error {
+            font-size: .78rem;
+            color: var(--red);
+            margin-top: 4px;
+            display: none;
+        }
+        .field-error.show { display: block; }
+
+        textarea { resize: vertical; min-height: 80px; }
+
+        .field-hint {
+            font-size: .78rem;
+            color: var(--gray-400);
+            margin-top: 4px;
+        }
+
+        /* Grid layouts */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+        @media(max-width:600px) {
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+        }
+
+        /* ============================================
+           SIRET LOOKUP
+        ============================================ */
+        .siret-wrapper { position: relative; }
+        .siret-btn {
+            position: absolute;
+            right: 8px; top: 50%;
+            transform: translateY(-50%);
+            background: var(--blue-mid);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: .78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background var(--transition);
+        }
+        .siret-btn:hover { background: #1d4ed8; }
+        .siret-btn:disabled { background: var(--gray-400); cursor: not-allowed; }
+        #siret-input { padding-right: 100px; }
+        .siret-status {
+            font-size: .8rem;
+            margin-top: 6px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            display: none;
+        }
+        .siret-status.loading { display: block; background: var(--blue-light); color: var(--blue-mid); }
+        .siret-status.success { display: block; background: var(--green-light); color: var(--green); }
+        .siret-status.error   { display: block; background: var(--red-light);   color: var(--red); }
+
+        /* ============================================
+           ADDRESS AUTOCOMPLETE
+        ============================================ */
+        .autocomplete-wrapper { position: relative; }
+        .autocomplete-list {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0; right: 0;
+            background: white;
+            border: 1.5px solid var(--blue-border);
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 200;
+            box-shadow: var(--shadow-lg);
+            display: none;
+        }
+        .autocomplete-list.open { display: block; }
+        .autocomplete-item {
+            padding: 10px 14px;
+            font-size: .85rem;
+            cursor: pointer;
+            border-bottom: 1px solid var(--gray-100);
+            transition: background var(--transition);
+        }
+        .autocomplete-item:last-child { border-bottom: none; }
+        .autocomplete-item:hover, .autocomplete-item:focus {
+            background: var(--blue-light);
+            outline: none;
+        }
+
+        /* ============================================
+           CHECKBOXES & RADIOS — Custom
+        ============================================ */
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        .options-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+        .options-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+        @media(max-width:500px) {
+            .options-grid, .options-grid.cols-2, .options-grid.cols-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .option-item {
+            position: relative;
+        }
+        .option-item input[type="checkbox"],
+        .option-item input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            width: 0; height: 0;
+        }
+        .option-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+            border: 1.5px solid var(--gray-200);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: .85rem;
+            font-weight: 500;
+            color: var(--gray-700);
+            transition: all var(--transition);
+            user-select: none;
+            background: white;
+        }
+        .option-label:hover {
+            border-color: var(--blue-mid);
+            background: var(--blue-light);
+            color: var(--blue-dark);
+        }
+        .option-label::before {
+            content: '';
+            width: 18px; height: 18px;
+            border: 2px solid var(--gray-300);
+            border-radius: 4px;
+            flex-shrink: 0;
+            transition: all var(--transition);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .option-item input[type="radio"] + .option-label::before {
+            border-radius: 50%;
+        }
+        .option-item input:checked + .option-label {
+            border-color: var(--blue-mid);
+            background: var(--blue-light);
+            color: var(--blue-dark);
+            font-weight: 600;
+        }
+        .option-item input:checked + .option-label::before {
+            background: var(--blue-mid);
+            border-color: var(--blue-mid);
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M13.5 3.5L6 11 2.5 7.5' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
+            background-size: 12px;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .option-item input[type="radio"]:checked + .option-label::before {
+            background-image: none;
+            box-shadow: inset 0 0 0 4px white, inset 0 0 0 9px var(--blue-mid);
+        }
+
+        /* ============================================
+           RANGE SLIDERS
+        ============================================ */
+        .slider-group { margin-bottom: 12px; }
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 6px;
+        }
+        .slider-label-text { min-width: 140px; font-size: .82rem; color: var(--gray-700); }
+        input[type="range"] {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 6px;
+            border-radius: 99px;
+            background: var(--gray-200);
+            outline: none;
+            cursor: pointer;
+            border: none;
+            box-shadow: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            background: var(--blue-mid);
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(37,99,235,.4);
+            cursor: pointer;
+        }
+        .slider-value {
+            min-width: 48px;
+            text-align: center;
+            font-size: .85rem;
+            font-weight: 700;
+            color: var(--blue-mid);
+            background: var(--blue-light);
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+        .slider-total {
+            font-size: .8rem;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-top: 8px;
+            font-weight: 600;
+        }
+        .slider-total.ok    { background: var(--green-light); color: var(--green); }
+        .slider-total.error { background: var(--red-light);   color: var(--red); }
+
+        /* ============================================
+           HORAIRES TABLE
+        ============================================ */
+        .hours-table { width: 100%; border-collapse: collapse; font-size: .83rem; }
+        .hours-table th {
+            background: var(--blue-dark);
+            color: white;
+            padding: 8px 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .hours-table th:first-child { border-radius: 8px 0 0 0; }
+        .hours-table th:last-child  { border-radius: 0 8px 0 0; }
+        .hours-table td { padding: 8px 12px; border-bottom: 1px solid var(--gray-100); }
+        .hours-table tr:nth-child(even) td { background: var(--gray-50); }
+        .hours-table input[type="text"] { padding: 6px 10px; font-size: .82rem; }
+
+        /* ============================================
+           HIGHLIGHT / INFO BOXES
+        ============================================ */
+        .info-box {
+            padding: 14px 16px;
+            border-radius: 8px;
+            font-size: .83rem;
+            margin-bottom: 16px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            line-height: 1.5;
+        }
+        .info-box.blue   { background: var(--blue-light);   color: #1e3a8a; border-left: 3px solid var(--blue-mid); }
+        .info-box.green  { background: var(--green-light);  color: #14532d; border-left: 3px solid var(--green); }
+        .info-box.orange { background: var(--orange-light); color: #7c2d12; border-left: 3px solid var(--orange); }
+        .info-box .icon  { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+
+        /* ============================================
+           NAVIGATION BUTTONS
+        ============================================ */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 32px;
+            gap: 12px;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: .9rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all var(--transition);
+            text-decoration: none;
+            font-family: inherit;
+        }
+        .btn:focus-visible {
+            outline: 3px solid var(--blue-mid);
+            outline-offset: 2px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--blue-mid), #7c3aed);
+            color: white;
+            box-shadow: 0 4px 14px rgba(37,99,235,.35);
+        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,.45); }
+        .btn-primary:active { transform: translateY(0); }
+        .btn-secondary {
+            background: white;
+            color: var(--gray-700);
+            border: 1.5px solid var(--gray-300);
+        }
+        .btn-secondary:hover { border-color: var(--blue-mid); color: var(--blue-mid); background: var(--blue-light); }
+        .btn-success {
+            background: linear-gradient(135deg, var(--green), #059669);
+            color: white;
+            box-shadow: 0 4px 14px rgba(22,163,74,.35);
+        }
+        .btn-success:hover { transform: translateY(-1px); }
+        .btn:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        .btn .spinner {
+            width: 16px; height: 16px;
+            border: 2px solid rgba(255,255,255,.4);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin .7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ============================================
+           SUCCESS SCREEN
+        ============================================ */
+        .success-screen {
+            text-align: center;
+            padding: 60px 24px;
+        }
+        .success-icon {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            background: var(--green-light);
+            border: 3px solid var(--green-border);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2.5rem;
+            margin: 0 auto 24px;
+        }
+        .success-screen h2 { font-size: 1.8rem; color: var(--blue-dark); margin-bottom: 12px; }
+        .success-screen p  { color: var(--gray-600); font-size: .95rem; max-width: 480px; margin: 0 auto 32px; }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            text-align: left;
+            max-width: 600px;
+            margin: 0 auto 32px;
+        }
+        @media(max-width:500px) { .summary-grid { grid-template-columns: 1fr; } }
+        .summary-item {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 10px;
+            padding: 16px;
+        }
+        .summary-label { font-size: .75rem; color: var(--gray-400); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+        .summary-value { font-size: .95rem; font-weight: 600; color: var(--gray-900); margin-top: 4px; }
+
+        /* ============================================
+           AUTOSAVE INDICATOR
+        ============================================ */
+        .autosave-badge {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--green);
+            color: white;
+            font-size: .75rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 99px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all .4s;
+            z-index: 999;
+            pointer-events: none;
+        }
+        .autosave-badge.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ============================================
+           TOAST NOTIFICATIONS
+        ============================================ */
+        .toast-container {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .toast {
+            background: var(--gray-900);
+            color: white;
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-size: .85rem;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn .3s ease;
+            max-width: 320px;
+        }
+        .toast.success { background: var(--green); }
+        .toast.error   { background: var(--red); }
+        .toast.info    { background: var(--blue-mid); }
+        @keyframes slideIn {
+            from { transform: translateX(110%); opacity: 0; }
+            to   { transform: translateX(0);    opacity: 1; }
+        }
+
+        /* ============================================
+           MISC
+        ============================================ */
+        .divider {
+            height: 1px;
+            background: var(--gray-200);
+            margin: 20px 0;
+        }
+        .tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+        .tag {
+            background: var(--blue-light);
+            color: var(--blue-mid);
+            font-size: .75rem;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 99px;
+        }
+
+        /* Honeypot */
+        .hp-field { position: absolute; left: -9999px; top: -9999px; opacity: 0; pointer-events: none; }
+
+        /* Save/restore banner */
+        .restore-banner {
+            background: var(--orange-light);
+            border: 1.5px solid #fed7aa;
+            border-radius: 10px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 24px;
+            font-size: .85rem;
+            color: #7c2d12;
+        }
+        .restore-banner.hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+<!-- AUTOSAVE BADGE -->
+<div class="autosave-badge" id="autosave-badge">💾 Sauvegardé</div>
+
+<!-- HEADER -->
+<header class="header">
+    <h1>📞 Lav&#39;Assist — Audit Téléphonique</h1>
+    <p>Questionnaire confidentiel · Durée estimée : 8–12 minutes</p>
+</header>
+
+<!-- PROGRESS -->
+<div class="progress-container">
+    <div class="progress-info">
+        <span id="progress-label">Étape 1 sur 7</span>
+        <span id="progress-pct">14%</span>
+    </div>
+    <div class="progress-track">
+        <div class="progress-fill" id="progress-fill" style="width:14%"></div>
+    </div>
+    <div class="steps-dots" id="steps-dots" role="tablist" aria-label="Navigation entre étapes"></div>
+</div>
+
+<!-- MAIN -->
+<main class="main" id="main-content">
+
+    <!-- RESTORE BANNER -->
+    <div class="restore-banner hidden" id="restore-banner">
+        <span>💾 Une sauvegarde automatique a été trouvée. Voulez-vous reprendre là où vous en étiez ?</span>
+        <div style="display:flex;gap:8px;flex-shrink:0">
+            <button class="btn btn-primary" style="padding:8px 16px;font-size:.8rem" onclick="restoreSave()">Reprendre</button>
+            <button class="btn btn-secondary" style="padding:8px 16px;font-size:.8rem" onclick="clearSave()">Recommencer</button>
+        </div>
+    </div>
+
+    <!-- ================================================
+         SECTION 1 — IDENTIFICATION
+    ================================================ -->
+    <section class="section active" id="section-1" aria-label="Identification de l'établissement">
+        <div class="section-header">
+            <div class="section-icon" style="background:#eff6ff">🏥</div>
+            <div>
+                <div class="section-title">Identification de l'établissement</div>
+                <div class="section-desc">Informations de base sur votre structure</div>
+            </div>
+        </div>
+
+        <div class="info-box blue">
+            <span class="icon">ℹ️</span>
+            <span>Les données collectées sont strictement confidentielles et utilisées uniquement pour préparer votre audit téléphonique personnalisé.</span>
+        </div>
+
+        <div class="card">
+            <div class="card-title">🔍 Recherche automatique par SIRET <span class="badge optional">Optionnel</span></div>
+            <div class="field">
+                <label for="siret-input">Numéro SIRET (14 chiffres)</label>
+                <div class="siret-wrapper">
+                    <input type="text" id="siret-input" name="siret" maxlength="14"
+                           placeholder="Ex : 73282932000074"
+                           inputmode="numeric"
+                           autocomplete="off"
+                           aria-describedby="siret-hint siret-status">
+                    <button class="siret-btn" id="siret-btn" onclick="lookupSIRET()" type="button"
+                            aria-label="Rechercher les informations de l'entreprise par SIRET">
+                        Rechercher
+                    </button>
+                </div>
+                <div id="siret-hint" class="field-hint">Saisir 14 chiffres pour remplir automatiquement les champs ci-dessous</div>
+                <div class="siret-status" id="siret-status" role="status"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">🏥 Informations générales</div>
+            <div class="field">
+                <label for="nom-etablissement">Nom de l'établissement <span class="req">*</span></label>
+                <input type="text" id="nom-etablissement" name="nom_etablissement"
+                       placeholder="Ex : Clinique du Lac" required
+                       aria-required="true">
+                <div class="field-error" id="err-nom-etablissement">Ce champ est obligatoire</div>
+            </div>
+            <div class="grid-2">
+                <div class="field">
+                    <label for="type-etablissement">Type d'établissement <span class="req">*</span></label>
+                    <select id="type-etablissement" name="type_etablissement" required aria-required="true">
+                        <option value="">Sélectionner…</option>
+                        <option>Clinique privée</option>
+                        <option>Hôpital public</option>
+                        <option>EHPAD</option>
+                        <option>Cabinet médical</option>
+                        <option>Centre de soins</option>
+                        <option>Laboratoire</option>
+                        <option>Pharmacie</option>
+                        <option>Autre</option>
+                    </select>
+                    <div class="field-error" id="err-type-etablissement">Veuillez sélectionner un type</div>
+                </div>
+                <div class="field">
+                    <label for="nb-lits">Nombre de lits / places</label>
+                    <input type="number" id="nb-lits" name="nb_lits" min="0" placeholder="Ex : 120">
+                </div>
+            </div>
+            <div class="field">
+                <label for="adresse-input">Adresse complète <span class="req">*</span></label>
+                <div class="autocomplete-wrapper">
+                    <input type="text" id="adresse-input" name="adresse"
+                           placeholder="Commencez à taper votre adresse…"
+                           autocomplete="off" required aria-required="true"
+                           aria-expanded="false" aria-autocomplete="list"
+                           role="combobox"
+                           aria-controls="adresse-list">
+                    <div class="autocomplete-list" id="adresse-list" role="listbox"></div>
+                </div>
+                <div class="field-error" id="err-adresse">Ce champ est obligatoire</div>
+            </div>
+            <div class="grid-3">
+                <div class="field">
+                    <label for="code-postal">Code postal <span class="req">*</span></label>
+                    <input type="text" id="code-postal" name="code_postal"
+                           placeholder="Ex : 75001" maxlength="5" inputmode="numeric" required>
+                    <div class="field-error" id="err-code-postal">Code postal invalide (5 chiffres)</div>
+                </div>
+                <div class="field">
+                    <label for="ville">Ville <span class="req">*</span></label>
+                    <input type="text" id="ville" name="ville" placeholder="Ex : Paris" required>
+                    <div class="field-error" id="err-ville">Ce champ est obligatoire</div>
+                </div>
+                <div class="field">
+                    <label for="departement">Département</label>
+                    <input type="text" id="departement" name="departement"
+                           placeholder="Autofill depuis CP" readonly
+                           style="background:var(--gray-50);color:var(--gray-600)">
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">👤 Contact principal</div>
+            <div class="grid-2">
+                <div class="field">
+                    <label for="contact-nom">Nom &amp; Prénom <span class="req">*</span></label>
+                    <input type="text" id="contact-nom" name="contact_nom"
+                           placeholder="Ex : Marie Dupont" required>
+                    <div class="field-error" id="err-contact-nom">Ce champ est obligatoire</div>
+                </div>
+                <div class="field">
+                    <label for="contact-fonction">Fonction</label>
+                    <input type="text" id="contact-fonction" name="contact_fonction"
+                           placeholder="Ex : Directrice administrative">
+                </div>
+            </div>
+            <div class="grid-2">
+                <div class="field">
+                    <label for="contact-email">Email professionnel <span class="req">*</span></label>
+                    <input type="email" id="contact-email" name="contact_email"
+                           placeholder="Ex : m.dupont@clinique.fr" required
+                           inputmode="email">
+                    <div class="field-error" id="err-contact-email">Email invalide</div>
+                </div>
+                <div class="field">
+                    <label for="contact-tel">Téléphone direct</label>
+                    <input type="tel" id="contact-tel" name="contact_tel"
+                           placeholder="Ex : 06 12 34 56 78"
+                           inputmode="tel">
+                    <div class="field-error" id="err-contact-tel">Format invalide</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav-buttons">
+            <div></div>
+            <button class="btn btn-primary" onclick="goToSection(2)" type="button">
+                Suivant <span aria-hidden="true">→</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- ================================================
+         SECTION 2 — VOLUME & FLUX D'APPELS
+    ================================================ -->
+    <section class="section" id="section-2" aria-label="Volume et flux d'appels">
+        <div class="section-header">
+            <div class="section-icon" style="background:#f0fdf4">📊</div>
+            <div>
+                <div class="section-title">Volume &amp; Flux d'appels</div>
+                <div class="section-desc">Quantifier vos flux téléphoniques actuels</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">📞 Volume journalier</div>
+            <div class="grid-3">
+                <div class="field">
+                    <label for="appels-jour">Appels reçus/jour <span class="req">*</span></label>
+                    <input type="number" id="appels-jour" name="appels_jour"
+                           min="0" placeholder="Ex : 150" required>
+                    <div class="field-error" id="err-appels-jour">Champ requis</div>
+                </div>
+                <div class="field">
+                    <label for="appels-emis">Appels émis/jour</label>
+                    <input type="number" id="appels-emis" name="appels_emis"
+                           min="0" placeholder="Ex : 40">
+                </div>
+                <div class="field">
+                    <label for="appels-manques">Appels manqués/jour (estimation)</label>
+                    <input type="number" id="appels-manques" name="appels_manques"
+                           min="0" placeholder="Ex : 25">
+                </div>
+            </div>
+            <div class="grid-2">
+                <div class="field">
+                    <label for="duree-moyenne">Durée moyenne d'un appel</label>
+                    <select id="duree-moyenne" name="duree_moyenne">
+                        <option value="">Sélectionner…</option>
+                        <option>Moins de 1 min</option>
+                        <option>1–2 min</option>
+                        <option>2–4 min</option>
+                        <option>4–7 min</option>
+                        <option>Plus de 7 min</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="taux-decroché">Taux de décroché estimé</label>
+                    <select id="taux-decroché" name="taux_decroche">
+                        <option value="">Sélectionner…</option>
+                        <option>Moins de 50%</option>
+                        <option>50–70%</option>
+                        <option>70–85%</option>
+                        <option>85–95%</option>
+                        <option>Plus de 95%</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- NOUVEAU : Répartition par motif -->
+        <div class="card">
+            <div class="card-title">🎯 Répartition des appels par motif <span class="badge">Nouveau</span></div>
+            <div class="info-box blue">
+                <span class="icon">💡</span>
+                <span>Ajustez les curseurs pour estimer la répartition de vos appels. Le total doit être égal à 100%.</span>
+            </div>
+            <div id="motifs-sliders">
+                <div class="slider-group">
+                    <div class="slider-row">
+                        <span class="slider-label-text">📅 Prise de RDV</span>
+                        <input type="range" min="0" max="100" value="35" step="5"
+                               id="motif-rdv" name="motif_rdv"
+                               oninput="updateSlider(this,'val-rdv')" aria-label="Prise de RDV">
+                        <span class="slider-value" id="val-rdv">35%</span>
+                    </div>
+                </div>
+                <div class="slider-group">
+                    <div class="slider-row">
+                        <span class="slider-label-text">❓ Renseignements</span>
+                        <input type="range" min="0" max="100" value="25" step="5"
+                               id="motif-info" name="motif_info"
+                               oninput="updateSlider(this,'val-info')" aria-label="Renseignements">
+                        <span class="slider-value" id="val-info">25%</span>
+                    </div>
+                </div>
+                <div class="slider-group">
+                    <div class="slider-row">
+                        <span class="slider-label-text">🚨 Urgences</span>
+                        <input type="range" min="0" max="100" value="15" step="5"
+                               id="motif-urgence" name="motif_urgence"
+                               oninput="updateSlider(this,'val-urgence')" aria-label="Urgences">
+                        <span class="slider-value" id="val-urgence">15%</span>
+                    </div>
+                </div>
+                <div class="slider-group">
+                    <div class="slider-row">
+                        <span class="slider-label-text">💊 Ordonnances/Admin</span>
+                        <input type="range" min="0" max="100" value="15" step="5"
+                               id="motif-admin" name="motif_admin"
+                               oninput="updateSlider(this,'val-admin')" aria-label="Admin">
+                        <span class="slider-value" id="val-admin">15%</span>
+                    </div>
+                </div>
+                <div class="slider-group">
+                    <div class="slider-row">
+                        <span class="slider-label-text">🔄 Autres</span>
+                        <input type="range" min="0" max="100" value="10" step="5"
+                               id="motif-autre" name="motif_autre"
+                               oninput="updateSlider(this,'val-autre')" aria-label="Autres">
+                        <span class="slider-value" id="val-autre">10%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="slider-total ok" id="motifs-total">✅ Total : 100% — Parfait !</div>
+        </div>
+
+        <!-- NOUVEAU : Pics horaires -->
+        <div class="card">
+            <div class="card-title">⏰ Pics horaires <span class="badge">Nouveau</span></div>
+            <div class="info-box orange">
+                <span class="icon">⚡</span>
+                <span>Identifier vos pics d'appels est essentiel pour dimensionner correctement la solution.</span>
+            </div>
+            <div class="field">
+                <label>Créneaux de forte affluence (semaine) — plusieurs choix possibles</label>
+                <div class="options-grid cols-3">
+                    <div class="option-item">
+                        <input type="checkbox" id="pic-matin-tot" name="pics[]" value="Matin tôt (7h–9h)">
+                        <label class="option-label" for="pic-matin-tot">🌅 Matin tôt (7h–9h)</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="pic-matin" name="pics[]" value="Matin (9h–12h)" checked>
+                        <label class="option-label" for="pic-matin">☀️ Matin (9h–12h)</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="pic-midi" name="pics[]" value="Midi (12h–14h)">
+                        <label class="option-label" for="pic-midi">🌤️ Midi (12h–14h)</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="pic-aprem" name="pics[]" value="Après-midi (14h–17h)">
+                        <label class="option-label" for="pic-aprem">🌇 Après-midi (14h–17h)</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="pic-soir" name="pics[]" value="Soir (17h–20h)">
+                        <label class="option-label" for="pic-soir">🌆 Soir (17h–20h)</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="pic-nuit" name="pics[]" value="Nuit (20h–7h)">
+                        <label class="option-label" for="pic-nuit">🌙 Nuit (20h–7h)</label>
+                    </div>
+                </div>
+            </div>
+            <div class="divider"></div>
+            <div class="field">
+                <label>Activité week-end</label>
+                <div class="options-grid cols-2">
+                    <div class="option-item">
+                        <input type="radio" name="weekend-activite" id="we-faible" value="Faible (&lt;30% de la semaine)">
+                        <label class="option-label" for="we-faible">📉 Faible (&lt;30% de la semaine)</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="radio" name="weekend-activite" id="we-similaire" value="Similaire à la semaine">
+                        <label class="option-label" for="we-similaire">📊 Similaire à la semaine</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="radio" name="weekend-activite" id="we-superieur" value="Supérieur (pics week-end)">
+                        <label class="option-label" for="we-superieur">📈 Supérieur (pics week-end)</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="radio" name="weekend-activite" id="we-ferme" value="Fermé le week-end">
+                        <label class="option-label" for="we-ferme">🔒 Fermé le week-end</label>
+                    </div>
+                </div>
+            </div>
+            <div class="field">
+                <label for="periode-saisonniere">Existe-t-il des périodes saisonnières impactant votre volume ?</label>
+                <textarea id="periode-saisonniere" name="periode_saisonniere"
+                          placeholder="Ex : Forte hausse en janvier–février (grippe), baisse en août…"
+                          rows="2"></textarea>
+            </div>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="btn btn-secondary" onclick="goToSection(1)" type="button">
+                <span aria-hidden="true">←</span> Précédent
+            </button>
+            <button class="btn btn-primary" onclick="goToSection(3)" type="button">
+                Suivant <span aria-hidden="true">→</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- ================================================
+         SECTION 3 — ORGANISATION ACTUELLE
+    ================================================ -->
+    <section class="section" id="section-3" aria-label="Organisation actuelle">
+        <div class="section-header">
+            <div class="section-icon" style="background:#fff7ed">⚙️</div>
+            <div>
+                <div class="section-title">Organisation actuelle</div>
+                <div class="section-desc">Comment gérez-vous votre standard aujourd'hui ?</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">👥 Équipe en charge du standard</div>
+            <div class="grid-3">
+                <div class="field">
+                    <label for="nb-standardistes">Standardistes dédiés(es)</label>
+                    <input type="number" id="nb-standardistes" name="nb_standardistes" min="0" placeholder="Ex : 3">
+                </div>
+                <div class="field">
+                    <label for="nb-etp">ETP total affecté</label>
+                    <input type="number" id="nb-etp" name="nb_etp" min="0" step="0.5" placeholder="Ex : 2.5">
+                </div>
+                <div class="field">
+                    <label for="cout-mensuel-actuel">Coût mensuel actuel (€)</label>
+                    <input type="number" id="cout-mensuel-actuel" name="cout_mensuel_actuel" min="0" placeholder="Ex : 8500">
+                    <div class="field-hint">Salaires + charges standardistes</div>
+                </div>
+            </div>
+            <div class="field">
+                <label>Horaires de couverture actuelle</label>
+                <table class="hours-table" aria-label="Horaires par période">
+                    <thead>
+                        <tr>
+                            <th>Période</th>
+                            <th>Heure ouverture</th>
+                            <th>Heure fermeture</th>
+                            <th>Jours couverts</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Semaine</strong></td>
+                            <td><input type="text" name="horaire_sem_debut" placeholder="08:00" style="width:90px"></td>
+                            <td><input type="text" name="horaire_sem_fin" placeholder="19:00" style="width:90px"></td>
+                            <td><input type="text" name="horaire_sem_jours" placeholder="Lun–Ven"></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Samedi</strong></td>
+                            <td><input type="text" name="horaire_sam_debut" placeholder="08:00" style="width:90px"></td>
+                            <td><input type="text" name="horaire_sam_fin" placeholder="13:00" style="width:90px"></td>
+                            <td><input type="text" name="horaire_sam_jours" placeholder="Samedi"></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Dimanche/JF</strong></td>
+                            <td><input type="text" name="horaire_dim_debut" placeholder="—" style="width:90px"></td>
+                            <td><input type="text" name="horaire_dim_fin" placeholder="—" style="width:90px"></td>
+                            <td><input type="text" name="horaire_dim_jours" placeholder="Non couvert"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">🛠️ Infrastructure téléphonique</div>
+            <div class="grid-2">
+                <div class="field">
+                    <label for="type-ipbx">Type de PABX/IPBX</label>
+                    <select id="type-ipbx" name="type_ipbx">
+                        <option value="">Sélectionner…</option>
+                        <option>Alcatel</option>
+                        <option>Cisco</option>
+                        <option>Avaya</option>
+                        <option>Mitel</option>
+                        <option>3CX</option>
+                        <option>RingCentral</option>
+                        <option>Teams Direct Routing</option>
+                        <option>Centrex opérateur</option>
+                        <option>Autre / Inconnu</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="nb-lignes">Nombre de lignes téléphoniques</label>
+                    <input type="number" id="nb-lignes" name="nb_lignes" min="0" placeholder="Ex : 12">
+                </div>
+            </div>
+            <div class="field">
+                <label>Logiciel de gestion des patients (DPI/DMP)</label>
+                <div class="options-grid cols-3">
+                    <div class="option-item">
+                        <input type="checkbox" id="si-mediboard" name="si[]" value="Mediboard">
+                        <label class="option-label" for="si-mediboard">Mediboard</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="si-crossway" name="si[]" value="Crossway">
+                        <label class="option-label" for="si-crossway">Crossway</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="si-hopital" name="si[]" value="Hôpital Manager">
+                        <label class="option-label" for="si-hopital">Hôpital Manager</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="si-doctolib" name="si[]" value="Doctolib">
+                        <label class="option-label" for="si-doctolib">Doctolib</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="si-clinilog" name="si[]" value="Clinilog">
+                        <label class="option-label" for="si-clinilog">Clinilog</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="si-autre" name="si[]" value="Autre">
+                        <label class="option-label" for="si-autre">Autre</label>
+                    </div>
+                </div>
+                <div class="field" style="margin-top:10px">
+                    <input type="text" id="si-autre-detail" name="si_autre_detail" placeholder="Précisez si autre…">
+                </div>
+            </div>
+        </div>
+
+        <!-- NOUVEAU : Langue(s) -->
+        <div class="card">
+            <div class="card-title">🌍 Langue(s) du standard <span class="badge">Nouveau</span></div>
+            <div class="field">
+                <label>Langue(s) utilisées pour la prise d'appels (plusieurs choix possibles)</label>
+                <div class="options-grid cols-3">
+                    <div class="option-item">
+                        <input type="checkbox" id="lang-fr" name="langues[]" value="Français" checked>
+                        <label class="option-label" for="lang-fr">🇫🇷 Français</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="lang-en" name="langues[]" value="Anglais">
+                        <label class="option-label" for="lang-en">🇬🇧 Anglais</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="lang-es" name="langues[]" value="Espagnol">
+                        <label class="option-label" for="lang-es">🇪🇸 Espagnol</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="lang-ar" name="langues[]" value="Arabe">
+                        <label class="option-label" for="lang-ar">🇲🇦 Arabe</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="lang-de" name="langues[]" value="Allemand">
+                        <label class="option-label" for="lang-de">🇩🇪 Allemand</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="lang-autre" name="langues[]" value="Autre">
+                        <label class="option-label" for="lang-autre">🌐 Autre</label>
+                    </div>
+                </div>
+                <div class="field" style="margin-top:10px">
+                    <input type="text" id="lang-autre-detail" name="lang_autre_detail"
+                           placeholder="Autre(s) langue(s) souhaitée(s)…">
+                </div>
+            </div>
+            <div class="field">
+                <label for="pct-appels-etrangers">Estimation des appels en langue étrangère</label>
+                <select id="pct-appels-etrangers" name="pct_appels_etrangers">
+                    <option value="">Sélectionner…</option>
+                    <option>Moins de 5%</option>
+                    <option>5–15%</option>
+                    <option>15–30%</option>
+                    <option>Plus de 30%</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="btn btn-secondary" onclick="goToSection(2)" type="button">
+                <span aria-hidden="true">←</span> Précédent
+            </button>
+            <button class="btn btn-primary" onclick="goToSection(4)" type="button">
+                Suivant <span aria-hidden="true">→</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- ================================================
+         SECTION 4 — PROBLÉMATIQUES & DOULEURS
+    ================================================ -->
+    <section class="section" id="section-4" aria-label="Problématiques actuelles">
+        <div class="section-header">
+            <div class="section-icon" style="background:#fef2f2">😟</div>
+            <div>
+                <div class="section-title">Problématiques &amp; Points douloureux</div>
+                <div class="section-desc">Identifier les axes d'amélioration prioritaires</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">⚠️ Problèmes constatés — Cochez et priorisez</div>
+            <div class="info-box orange">
+                <span class="icon">👆</span>
+                <span>Sélectionnez tous les problèmes que vous rencontrez. Vous pourrez les commenter ensuite.</span>
+            </div>
+            <div class="options-grid cols-2">
+                <div class="option-item">
+                    <input type="checkbox" id="pb-decroché" name="problemes[]" value="Appels non décrochés">
+                    <label class="option-label" for="pb-decroché">📵 Appels non décrochés</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="pb-attente" name="problemes[]" value="Temps d'attente trop long">
+                    <label class="option-label" for="pb-attente">⏳ Temps d'attente trop long</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="pb-transfert" name="problemes[]" value="Mauvais transferts d'appels">
+                    <label class="option-label" for="pb-transfert">🔀 Mauvais transferts d'appels</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="pb-nuit" name="problemes[]" value="Absence couverture nuit/WE">
+                    <label class="option-label" for="pb-nuit">🌙 Absence couverture nuit/WE</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="pb-info" name="problemes[]" value="Informations transmises incorrectes">
+                    <label class="option-label" for="pb-info">❌ Informations incorrectes transmises</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="pb-charge" name="problemes[]" value="Surcharge du personnel">
+                    <label class="option-label" for="pb-charge">😮‍💨 Surcharge du personnel</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="pb-cout" name="problemes[]" value="Coût trop élevé">
+                    <label class="option-label" for="pb-cout">💸 Coût trop élevé</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="pb-abs" name="problemes[]" value="Gestion des absences difficile">
+                    <label class="option-label" for="pb-abs">🤒 Gestion absences difficile</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="pb-qualite" name="problemes[]" value="Qualité d'accueil insuffisante">
+                    <label class="option-label" for="pb-qualite">⭐ Qualité d'accueil insuffisante</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="pb-traçabilite" name="problemes[]" value="Manque de traçabilité">
+                    <label class="option-label" for="pb-traçabilite">📋 Manque de traçabilité</label>
+                </div>
+            </div>
+            <div class="field" style="margin-top:16px">
+                <label for="problemes-detail">Commentaires complémentaires</label>
+                <textarea id="problemes-detail" name="problemes_detail"
+                          placeholder="Décrivez en détail vos situations problématiques les plus fréquentes…"
+                          rows="3"></textarea>
+            </div>
+        </div>
+
+        <!-- NOUVEAU : Remboursements/coûts cachés -->
+        <div class="card">
+            <div class="card-title">💰 Coûts liés aux dysfonctionnements <span class="badge">Nouveau</span></div>
+            <div class="info-box green">
+                <span class="icon">📈</span>
+                <span>Ces données nous permettent de calculer votre ROI potentiel avec Lav&#39;Assist.</span>
+            </div>
+            <div class="grid-2">
+                <div class="field">
+                    <label for="remboursements-mensuels">Remboursements mensuels liés aux plaintes (€)</label>
+                    <input type="number" id="remboursements-mensuels" name="remboursements_mensuels"
+                           min="0" placeholder="Ex : 500">
+                    <div class="field-hint">Remboursements RDV manqués, compensations patients…</div>
+                </div>
+                <div class="field">
+                    <label for="rdv-perdus-mois">RDV perdus par mois (estimation)</label>
+                    <input type="number" id="rdv-perdus-mois" name="rdv_perdus_mois"
+                           min="0" placeholder="Ex : 30">
+                    <div class="field-hint">RDV non honorés ou annulés faute de contact</div>
+                </div>
+            </div>
+            <div class="grid-2">
+                <div class="field">
+                    <label for="valeur-rdv">Valeur moyenne d'un RDV (€)</label>
+                    <input type="number" id="valeur-rdv" name="valeur_rdv"
+                           min="0" placeholder="Ex : 80">
+                </div>
+                <div class="field">
+                    <label for="temps-perdu-heure">Temps/semaine perdu en gestion manuelle (h)</label>
+                    <input type="number" id="temps-perdu-heure" name="temps_perdu_heure"
+                           min="0" step="0.5" placeholder="Ex : 5">
+                </div>
+            </div>
+            <!-- ROI Calculator dynamique -->
+            <div id="roi-box" class="info-box green" style="display:none; margin-top:8px">
+                <span class="icon">🎯</span>
+                <div id="roi-text"></div>
+            </div>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="btn btn-secondary" onclick="goToSection(3)" type="button">
+                <span aria-hidden="true">←</span> Précédent
+            </button>
+            <button class="btn btn-primary" onclick="goToSection(5)" type="button">
+                Suivant <span aria-hidden="true">→</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- ================================================
+         SECTION 5 — ATTENTES & BESOINS
+    ================================================ -->
+    <section class="section" id="section-5" aria-label="Attentes et besoins">
+        <div class="section-header">
+            <div class="section-icon" style="background:#f0fdf4">🎯</div>
+            <div>
+                <div class="section-title">Attentes &amp; Besoins</div>
+                <div class="section-desc">Ce que vous souhaitez améliorer ou externaliser</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">✅ Services recherchés</div>
+            <div class="options-grid cols-2">
+                <div class="option-item">
+                    <input type="checkbox" id="svc-standard" name="services[]" value="Standard 24/7">
+                    <label class="option-label" for="svc-standard">📞 Standard téléphonique 24/7</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="svc-rdv" name="services[]" value="Prise de RDV">
+                    <label class="option-label" for="svc-rdv">📅 Prise de rendez-vous</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="svc-urgence" name="services[]" value="Tri urgences">
+                    <label class="option-label" for="svc-urgence">🚨 Tri et gestion des urgences</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="svc-msg" name="services[]" value="Messagerie médicale">
+                    <label class="option-label" for="svc-msg">✉️ Messagerie médicale sécurisée</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="svc-sms" name="services[]" value="Rappels SMS/Email">
+                    <label class="option-label" for="svc-sms">📱 Rappels SMS / Email patients</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="svc-reporting" name="services[]" value="Reporting appels">
+                    <label class="option-label" for="svc-reporting">📊 Reporting et statistiques</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="svc-ia" name="services[]" value="IA / Chatbot vocal">
+                    <label class="option-label" for="svc-ia">🤖 IA / Bot vocal intelligent</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="svc-formation" name="services[]" value="Formation équipe">
+                    <label class="option-label" for="svc-formation">🎓 Formation de l'équipe</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- NOUVEAU : Format et fréquence des rapports -->
+        <div class="card">
+            <div class="card-title">📊 Reporting &amp; Tableaux de bord <span class="badge">Nouveau</span></div>
+            <div class="field">
+                <label>Fréquence souhaitée des rapports</label>
+                <div class="options-grid cols-2">
+                    <div class="option-item">
+                        <input type="radio" name="rapport-freq" id="rp-quotidien" value="Quotidien">
+                        <label class="option-label" for="rp-quotidien">📆 Quotidien</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="radio" name="rapport-freq" id="rp-hebdo" value="Hebdomadaire">
+                        <label class="option-label" for="rp-hebdo">📅 Hebdomadaire</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="radio" name="rapport-freq" id="rp-mensuel" value="Mensuel">
+                        <label class="option-label" for="rp-mensuel">📋 Mensuel</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="radio" name="rapport-freq" id="rp-aucun" value="Pas nécessaire">
+                        <label class="option-label" for="rp-aucun">🚫 Pas nécessaire</label>
+                    </div>
+                </div>
+            </div>
+            <div class="field">
+                <label>Format préféré des rapports</label>
+                <div class="options-grid cols-3">
+                    <div class="option-item">
+                        <input type="checkbox" id="fmt-excel" name="rapport_format[]" value="Excel/CSV">
+                        <label class="option-label" for="fmt-excel">📗 Excel / CSV</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="fmt-pdf" name="rapport_format[]" value="PDF">
+                        <label class="option-label" for="fmt-pdf">📄 PDF</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="fmt-dashboard" name="rapport_format[]" value="Dashboard en ligne">
+                        <label class="option-label" for="fmt-dashboard">🖥️ Dashboard en ligne</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="fmt-email" name="rapport_format[]" value="Email automatique">
+                        <label class="option-label" for="fmt-email">📧 Email automatique</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="fmt-api" name="rapport_format[]" value="API/Intégration SI">
+                        <label class="option-label" for="fmt-api">🔗 API / Intégration SI</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="fmt-autre" name="rapport_format[]" value="Autre">
+                        <label class="option-label" for="fmt-autre">🔧 Autre</label>
+                    </div>
+                </div>
+            </div>
+            <div class="field">
+                <label for="kpi-prioritaires">KPI prioritaires à suivre</label>
+                <textarea id="kpi-prioritaires" name="kpi_prioritaires"
+                          placeholder="Ex : taux de décroché, temps d'attente moyen, appels par motif, satisfaction patient…"
+                          rows="2"></textarea>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">🗓️ Délais &amp; Budget</div>
+            <div class="grid-2">
+                <div class="field">
+                    <label for="delai-souhaite">Délai de mise en place souhaité</label>
+                    <select id="delai-souhaite" name="delai_souhaite">
+                        <option value="">Sélectionner…</option>
+                        <option>Immédiat (sous 1 mois)</option>
+                        <option>Court terme (1–3 mois)</option>
+                        <option>Moyen terme (3–6 mois)</option>
+                        <option>Long terme (6+ mois)</option>
+                        <option>En cours d'étude</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="budget-mensuel">Budget mensuel envisagé (€)</label>
+                    <select id="budget-mensuel" name="budget_mensuel">
+                        <option value="">Sélectionner…</option>
+                        <option>Moins de 1 000 €</option>
+                        <option>1 000 – 3 000 €</option>
+                        <option>3 000 – 6 000 €</option>
+                        <option>6 000 – 10 000 €</option>
+                        <option>Plus de 10 000 €</option>
+                        <option>À définir selon offre</option>
+                    </select>
+                </div>
+            </div>
+            <div class="field">
+                <label for="contraintes">Contraintes spécifiques à signaler</label>
+                <textarea id="contraintes" name="contraintes"
+                          placeholder="Ex : contraintes réglementaires HDS, intégration obligatoire avec Mediboard, personnel syndiqué…"
+                          rows="3"></textarea>
+            </div>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="btn btn-secondary" onclick="goToSection(4)" type="button">
+                <span aria-hidden="true">←</span> Précédent
+            </button>
+            <button class="btn btn-primary" onclick="goToSection(6)" type="button">
+                Suivant <span aria-hidden="true">→</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- ================================================
+         SECTION 6 — CONFORMITÉ & SÉCURITÉ
+    ================================================ -->
+    <section class="section" id="section-6" aria-label="Conformité et sécurité">
+        <div class="section-header">
+            <div class="section-icon" style="background:#faf5ff">🔒</div>
+            <div>
+                <div class="section-title">Conformité &amp; Sécurité des données</div>
+                <div class="section-desc">Exigences légales et sécuritaires pour les données de santé</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">⚖️ Exigences réglementaires</div>
+            <div class="field">
+                <label>Certifications et exigences actuelles ou souhaitées</label>
+                <div class="options-grid cols-2">
+                    <div class="option-item">
+                        <input type="checkbox" id="cert-hds" name="certifs[]" value="Hébergement HDS">
+                        <label class="option-label" for="cert-hds">🏥 Hébergement HDS obligatoire</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="cert-rgpd" name="certifs[]" value="RGPD">
+                        <label class
